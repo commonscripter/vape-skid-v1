@@ -11,7 +11,7 @@ end
 local function downloadFile(path, func)
 	if not isfile(path) then
 		local suc, res = pcall(function()
-			return game:HttpGet('https://raw.githubusercontent.com/commonscripter/vape-skid-v1/'..readfile('vapeskid/profiles/commit.txt')..'/'..select(1, path:gsub('newvape/', '')), true)
+			return game:HttpGet('https://raw.githubusercontent.com/commonscripter/vape-skid-v1/'..readfile('vapeskid/profiles/commit.txt')..'/'..select(1, path:gsub('vapeskid/', '')), true)
 		end)
 		if not suc or res == '404: Not Found' then
 			error(res)
@@ -53,7 +53,7 @@ if not shared.VapeDeveloper then
 		wipeFolder('vapeskid/guis')
 		wipeFolder('vapeskid/libraries')
 	end
-	writefile('newvape/profiles/commit.txt', commit)
+	writefile('vapeskid/profiles/commit.txt', commit)
 end
 
-return loadstring(downloadFile('newvape/main.lua'), 'main')()
+return loadstring(downloadFile('vapeskid/main.lua'), 'main')()
