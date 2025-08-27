@@ -8490,4 +8490,191 @@ run(function()
 		List = WinEffectName
 	})
 end)
+
+run(function()
+    local Antihit = {Enabled = false}
+    local TimeUp = {Value = 0.4}
+    local Down = {Value = 0.1}
+    local Range = {Value = 15}
+
+    Antihit = vape.Categories.Blatant:CreateModule({
+        Name = "AntiHitV2",
+        Function = function(callback)
+            if callback then
+                spawn(function()
+                    while Antihit.Enabled do
+                        local character = lplr.Character
+                        local root = character and character:FindFirstChild("HumanoidRootPart")
+                        if root then
+                            local orgPos = root.Position
+                            local foundEnemy = false
+
+                            for _, v in next, playersService:GetPlayers() do
+                                if v ~= lplr and v.Team ~= lplr.Team then
+                                    local enemyChar = v.Character
+                                    local enemyRoot = enemyChar and enemyChar:FindFirstChild("HumanoidRootPart")
+                                    local enemyHum = enemyChar and enemyChar:FindFirstChild("Humanoid")
+                                    if enemyRoot and enemyHum and enemyHum.Health > 0 then
+                                        local dist = (root.Position - enemyRoot.Position).Magnitude
+                                        if dist <= Range.Value then
+                                            foundEnemy = true
+                                            break
+                                        end
+                                    end
+                                end
+                            end
+
+                            if foundEnemy then
+                                root.CFrame = CFrame.new(orgPos + Vector3.new(0, -105, 0))
+                                task.wait(TimeUp.Value)
+                                if Antihit.Enabled and lplr.Character and lplr.Character:FindFirstChild("HumanoidRootPart") then
+                                    lplr.Character.HumanoidRootPart.CFrame = CFrame.new(orgPos)
+                                end
+                            end
+                        end
+                        task.wait(Down.Value)
+                    end
+                end)
+            end
+        end,
+        Tooltip = "Prevents you from dying"
+    })
+
+    Range = Antihit:CreateSlider({
+        Name = "Range",
+        Min = 0,
+        Max = 50,
+        Default = 15,
+        Function = function(val) Range.Value = val end
+    })
+
+    TimeUp = Antihit:CreateSlider({
+        Name = "Time Up",
+        Min = 0,
+        Max = 1,
+        Default = 0.4,
+        Function = function(val) TimeUp.Value = val end
+    })
+
+    Down = Antihit:CreateSlider({
+        Name = "Time Down",
+        Min = 0,
+        Max = 1,
+        Default = 0.1,
+        Function = function(val) Down.Value = val end
+    })
+end)
+run(function()
+    local AutoBuyJadeHammer
+    local shopId
+
+    local function getShopNPC()
+        local shop, newid = nil, nil
+        if entitylib.isAlive then
+            local localPosition = entitylib.character.RootPart.Position
+            for _, v in store.shop do
+                if (v.RootPart.Position - localPosition).Magnitude <= 10 then
+                    shop = v.Shop
+                    newid = v.Id
+                end
+            end
+        end
+        return shop, newid
+    end
+
+    local function buyJadeHammer()
+        local jadeHammerItem = bedwars.Shop.getShopItem('jade_hammer', lplr)
+        if jadeHammerItem and jadeHammerItem.currency == 'iron' then
+            local iron = getItem('iron')
+            if iron and iron.amount >= jadeHammerItem.price then
+                bedwars.Client:Get('BedwarsPurchaseItem'):CallServerAsync({
+                    shopItem = jadeHammerItem,
+                    shopId = shopId
+                })
+            end
+        end
+    end
+
+    AutoBuyJadeHammer = vape.Categories.Inventory:CreateModule({
+        Name = 'AutoBuyJadeHammer',
+        Tooltip = 'Buys Jade Hammer instantly when you have ≥40 iron near shop',
+        Function = function(callback)
+            if callback then
+                task.spawn(function()
+                    repeat
+                        local iron = getItem('iron')
+                        local shop, newid = getShopNPC()
+                        if iron and iron.amount >= 40 and shop then
+                            shopId = newid
+                            buyJadeHammer()
+                        end
+                        task.wait(0.05)
+                    until not AutoBuyJadeHammer.Enabled
+                end)
+            end
+        end
+    })
+end)
+run(function()
+    local Godmode = {["Enabled"] = false}
+    Godmode = vape.Categories.Utility:CreateModule({
+        ["Name"] = "Godmode",
+        ["Function"] = function(callback)
+            if callback then
+                setfflag("DFFlagPlayerHumanoidPropertyUpdateRestrict", "False")
+                setfflag("DFIntDebugDefaultTargetWorldStepsPerFrame", "-2147483648")
+                setfflag("DFIntMaxMissedWorldStepsRemembered", "-2147483648")
+                setfflag("DFIntWorldStepsOffsetAdjustRate", "2147483648")
+                setfflag("DFIntDebugSendDistInSteps", "-2147483648")
+                setfflag("DFIntWorldStepMax", "-2147483648")
+                setfflag("DFIntWarpFactor", "2147483648")
+            end
+        end,
+        ["Tooltip"] = "Makes you untouchable."
+    })
+end)
+run(function()
+    local JadeExploit = {Enabled = false}
+
+    JadeExploit = vape.Categories.Blatant:CreateModule({
+        Name = "JadeInstaKill",
+        Function = function(callback)
+            JadeExploit.Enabled = callback
+            if callback then
+                local index = 10
+                task.spawn(function()
+                    while JadeExploit.Enabled do
+                        game:GetService("ReplicatedStorage"):WaitForChild("rbxts_include"):WaitForChild("node_modules"):WaitForChild("@rbxts"):WaitForChild("net"):WaitForChild("out"):WaitForChild("_NetManaged"):WaitForChild("JadeHammerSlam"):FireServer({slamIndex = index})
+                        index = index + 100
+                        task.wait(0.01)
+                    end
+                end)
+                task.spawn(function()
+                    while JadeExploit.Enabled do
+                        bedwars.AbilityController:useAbility("jade_hammer_jump")
+                        task.wait(1)
+                    end
+                end)
+            end
+        end,
+        Tooltip = "InstaKill Jade Hammer Needed, Doesnt Work With JadeDisabler"
+    })
+end)
+run(function()
+    local Disabler = {Enabled = false}
+
+    Disabler = vape.Categories.Blatant:CreateModule({
+        Name = "Jade Disabler",
+        Function = function(callback)
+            if callback then
+              notif('Disabler', 'wait 3 seconds to use high speed or you will get anticheated', 3)
+                repeat
+                    bedwars.AbilityController:useAbility("jade_hammer_jump")    
+                    task.wait(1)
+                until not Disabler.Enabled
+            end
+        end,
+        Tooltip = "Disables anticheat"
+    })
+end)
 	
